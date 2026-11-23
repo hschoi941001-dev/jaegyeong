@@ -874,7 +874,8 @@ function secHTML(n, s, i){
   const hook = s.hook ? `<div class="hook"><div class="l">쉽게 말하면</div><div>${inl(s.hook)}</div></div>` : '';
   const ex = s.ex ? `<details class="ex"><summary>예시로 풀어 보기<span class="hint">펼치기</span></summary><div>${inl(s.ex)}</div></details>` : '';
   const key = (s.key||[]).length ? `<div class="key"><div class="l">꼭 기억할 것</div><ul>${s.key.map(k => `<li>${inl(k)}</li>`).join('')}</ul></div>` : '';
-  return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${hook}${body}${ex}${key}</article>`;
+  const fig = s.fig && s.fig.svg ? `<figure class="fig">${s.fig.svg}${s.fig.cap ? `<figcaption>${inl(s.fig.cap)}</figcaption>` : ''}</figure>` : '';
+  return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${hook}${fig}${body}${ex}${key}</article>`;
 }
 function noteView(r, losCode){
   const n = noteBy(r); if (!n) return nav('#/notes');
