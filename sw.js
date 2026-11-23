@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when files change.
-const VERSION = 'jg-v1';
+const VERSION = 'jg-v2';
 const ASSETS = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
 const DATA = ['data/notes-FA.json', 'data/notes-TX.json', 'data/notes-CM.json', 'data/q-FA.json', 'data/q-TX.json', 'data/q-CM.json'];
 const FONT_HOST = 'cdn.jsdelivr.net';
