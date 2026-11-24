@@ -9,7 +9,7 @@ function walkIntro(n, lesson, labs, cases, quiz) {
     <p class="walk-takeaway"><strong>이렇게 판단해요</strong> ${inl(lesson.reason)}</p>
     <nav class="easy-nav" aria-label="이 장에서 이어서 보기">
       ${labs.length ? '<button type="button" data-go="note-lab">직접 해보기</button>' : ''}
-      ${n.r === 101 ? '<a href="#/note/101/101.e">유동·비유동 쉽게 보기</a>' : ''}
+      ${n.r === 101 ? '<a href="#/note/101/101.e">유동·비유동</a><a href="#/note/101/101.f">포괄손익</a>' : ''}
       <button type="button" data-go="s-core">세부 개념 보기</button>
       ${cases.length ? '<button type="button" data-go="note-quest">실무 사례</button>' : ''}
       ${quiz ? `<a href="#/mission/${n.r}">시험형 문제 ${quiz}개</a>` : ''}
