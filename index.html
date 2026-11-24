@@ -488,16 +488,19 @@ function boot(){
     });
     ROUNDS = [...rs].sort((a, b) => (+a) - (+b) || a.localeCompare(b));
     ROUNDS.forEach(rd => { EX[rd] = SUBJ.flatMap(t => EX[rd + '-' + t] || []); });
-    N.sort((a, b) => a.r - b.r);
+    N.sort((a, b) => (ORD[a.r] ?? 999 + a.r) - (ORD[b.r] ?? 999 + b.r));
+    SUBJ.forEach(t => N.filter(n => n.tp === t).forEach((n, i) => n.no = i + 1));
     N.forEach(n => { n.ix = [n.k, n.t, ...(n.los || []), ...noteText(n)].join('\n').toLowerCase(); });
   });
 }
 function applyStudy(n, lesson){
   n.study = lesson;
-  if (lesson.intro) n.one = lesson.intro;
-  if (lesson.fx) n.fx = lesson.fx;
-  if (lesson.trap) n.trap = lesson.trap;
-  if (lesson.chk) n.chk = lesson.chk;
+  if (!REVISED.has(n.r)) {
+    if (lesson.intro) n.one = lesson.intro;
+    if (lesson.fx) n.fx = lesson.fx;
+    if (lesson.trap) n.trap = lesson.trap;
+    if (lesson.chk) n.chk = lesson.chk;
+  }
   (n.sec || []).forEach(s => {
     const section = lesson.sections?.[s.h] || lesson.sections?.[s.los?.[0]];
     if (!section) return;
@@ -512,10 +515,22 @@ function applyStudy(n, lesson){
 }
 const isSub = id => String(id).includes('-');
 const examIds = rd => [rd, ...SUBJ.filter(t => EX[rd + '-' + t]).map(t => rd + '-' + t)];
-const exName = id => { const [rd, t] = String(id).split('-'); return t ? `제${rd}회 ${TN[t]}` : `제${rd}회 실전 3과목`; };
-const limitOf = id => (isSub(id) ? 50 : 150) * 60;
+const rdName = rd => rd === '6' ? '50선 보강 문항' : `제${rd}회`;
+const exName = id => { const [rd, t] = String(id).split('-'); return t ? `${rdName(rd)} ${TN[t]}` : `${rdName(rd)} 3과목`; };
+/* 실제 시험 속도(40문항 50분 = 문항당 75초)에 맞춰 문항 수로 계산 */
+const limitOf = id => (EX[id] ? EX[id].length : (isSub(id) ? 40 : 120)) * 75;
 const num = (id, q) => isSub(id) ? q.n : EX[id].indexOf(q) + 1;
-const chap = r => r ? (r % 100) + '장' : '';
+/* 50선 목차 순서와 대응 번호. 노트 r은 문항 연결용이라 그대로 두고 표시 순서만 바꾼다 */
+const REF = {101:'01~05선',119:'06~07선',102:'08·22선',103:'08~11선',104:'12~14·16선',105:'14~16선',106:'17~19선',107:'20~22선',108:'23~24선',109:'25선',110:'26~28선',111:'29~30선',112:'31~32선',113:'33~34선',114:'35~36선',115:'37~38선',116:'39선',120:'40~41선',121:'42~43선',122:'44~45선',117:'46~47선',118:'48~50선',
+  201:'01~05선',202:'06~08선',203:'09선',204:'10선',205:'11~12선',206:'13선',207:'14~15선',208:'16~18·20선',209:'19선',210:'21~25선',211:'26~29선',212:'30~32선',213:'33~37선',217:'38선',214:'39~42선',215:'43~45선',216:'45~50선',
+  301:'01~03선',302:'04~05선',303:'06~07선',304:'08~10선',306:'11~13선',307:'50선 외',308:'14~19선',309:'20~23선',305:'24~25선',310:'26~32선',313:'33~36선',314:'37~38·47선',311:'39~42선',312:'43~46선',315:'48~50선'};
+/* 숫자 키 객체는 오름차순으로 나열되므로 순서는 배열로 따로 둔다 */
+const ORD = Object.fromEntries([101,119,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,120,121,122,117,118,
+  201,202,203,204,205,206,207,208,209,210,211,212,213,217,214,215,216,
+  301,302,303,304,306,307,308,309,305,310,313,314,311,312,315].map((r, i) => [r, i]));
+/* 11/24 50선 보강으로 내용이 바뀐 장: study 데이터의 요약·공식·함정·확인 문제가 옛 내용이라 덮어쓰지 않는다 */
+const REVISED = new Set([101,109,112,118,209,210,216,313,314,315]);
+const chap = r => r ? (REF[r] || (r % 100) + '장') : '';
 const graded = q => !!q.a;
 const taxLine = tp => tp === 'TX' ? `<div class="taxnote">${TAXNOTE}</div>` : '';
 const vLine = q => q.v ? `<div class="vchk"><b>확인 필요:</b> ${inl(q.v)}</div>` : '';
@@ -634,15 +649,15 @@ function home(){
     return `<button class="btn ghost sm" style="padding-left:4px" onclick="nav('#/result/${id}/${hist.length-1}')">${isSub(id) ? TN[id.split('-')[1]] : '실전 3과목'} ${sc}${h.only ? '' : pass ? ', 합격' : ', 불합격'} (${h.date}) ›</button>`; };
   const rows = ROUNDS.map(rd => {
     const full = EX[rd], subs = SUBJ.filter(t => EX[rd + '-' + t]), cur = load('cur:' + rd, null);
-    const meta = `${subs.length}과목 ${full.length}문항, 150분` + (subs.length < 3 ? `, ${subs.map(t => TN[t]).join('·')}만 있음` : '');
+    const meta = `${subs.length}과목 ${full.length}문항, ${Math.round(full.length * 1.25)}분` + (subs.length < 3 ? `, ${subs.map(t => TN[t]).join('·')}만 있음` : '');
     const prog = cur ? `<div class="prog" aria-label="진행률"><i style="width:${Object.keys(cur.ans).length/full.length*100}%"></i></div>` : '';
     const btns = cur
       ? `<button class="btn pri" onclick="resume('${rd}')">실전 이어 풀기 ${Object.keys(cur.ans).length}/${full.length}</button><button class="btn" onclick="discard('${rd}')">처음부터</button>`
       : `<button class="btn pri" onclick="start('${rd}')">실전 응시 (3과목 한 번에)</button>`;
     const sb = subs.map(t => { const id = rd + '-' + t, c = load('cur:' + id, null); return `<button class="btn sbtn tp-${t}" onclick="${c ? `resume('${id}')` : `start('${id}')`}"><span>${TN[t]}</span><span class="num c">${c ? Object.keys(c.ans).length + '/' + EX[id].length + ' 이어 풀기' : EX[id].length + '문항'}</span></button>`; }).join('');
     const last = examIds(rd).map(lastBtn).filter(Boolean).join('');
-    return `<div class="card exam rise"><div class="t">제${rd}회 모의고사</div><div class="m" style="margin-top:-12px">${meta}${cur ? ', 실전 ' + (cur.mode==='exam'?'시험':'연습') + ' 모드 진행 중' : ''}</div>${prog}<div class="btns">${btns}</div>
-    <div><div class="note" style="margin-bottom:6px">과목별 응시, 과목당 50분</div><div class="sbtns">${sb}</div></div>${last ? `<div class="lasts">${last}</div>` : ''}</div>`;
+    return `<div class="card exam rise"><div class="t">${rd === '6' ? '50선 보강 문항' : `제${rd}회 모의고사`}</div><div class="m" style="margin-top:-12px">${meta}${cur ? ', 실전 ' + (cur.mode==='exam'?'시험':'연습') + ' 모드 진행 중' : ''}</div>${prog}<div class="btns">${btns}</div>
+    <div><div class="note" style="margin-bottom:6px">${rd === '6' ? '과목별 응시, 문항당 75초' : '과목별 응시, 과목당 50분'}</div><div class="sbtns">${sb}</div></div>${last ? `<div class="lasts">${last}</div>` : ''}</div>`;
   }).join('');
   const lastNote = load('nlast', null), ln = lastNote && noteBy(lastNote);
   const rq = rqLoad(), rqN = Object.keys(rq).filter(k => Q[k]).length, due = rqDue().length;
@@ -964,7 +979,7 @@ function drawList(f){
     const done = games.every((_, i) => progress[labKey(n.r, i)]);
     return `<span class="lab-list-tag">${done ? '게임 완료' : LAB_LABELS[games[0].type] + (games.length > 1 ? ` 외 ${games.length - 1}` : '')}</span>`;
   };
-  const row = n => `<a class="item tp-${n.tp}" href="#/note/${n.r}"><span class="rno">${n.r % 100}</span><span class="tx"><div class="k">${hl(n.t, q)}</div><div class="e">${hl(n.k || '', q)}</div>${q ? `<div class="snip">${hl(snippet(n, q), q)}</div>` : ''}${gameBadge(n)}${questBadge(n, results)}</span><span class="st">${sv[n.r] ? `<span class="sv">${I.starOn}</span>` : ''}${rd[n.r] ? `<span class="rd" aria-label="읽음">${I.check}</span>` : ''}</span></a>`;
+  const row = n => `<a class="item tp-${n.tp}" href="#/note/${n.r}"><span class="rno">${n.no || n.r % 100}</span><span class="tx"><div class="k">${hl(n.t, q)}</div><div class="e">${REF[n.r] ? '50선 ' + REF[n.r] + ' · ' : ''}${hl(n.k || '', q)}</div>${q ? `<div class="snip">${hl(snippet(n, q), q)}</div>` : ''}${gameBadge(n)}${questBadge(n, results)}</span><span class="st">${sv[n.r] ? `<span class="sv">${I.starOn}</span>` : ''}${rd[n.r] ? `<span class="rd" aria-label="읽음">${I.check}</span>` : ''}</span></a>`;
   let html = '';
   if (!items.length) html = `<div class="empty"><b>${q ? '‘' + esc(NQ) + '’ 결과 없음' : '저장한 노트 없음'}</b>${q ? '다른 표현으로 검색.' : '노트 오른쪽 위 별을 누르면 여기 모임.'}</div>`;
   else if (q || f === 'saved') html = `<div class="ghead"><span class="n">${q ? '검색 결과' : '저장한 노트'}</span><span class="c" style="margin-left:auto">${items.length}개</span></div><div class="glist">${items.map(row).join('')}</div>`;
