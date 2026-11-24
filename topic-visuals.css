@@ -1,0 +1,35 @@
+.walk-page .art .topic-language { margin: 0 0 13px; }
+.topic-situation { border-left: 2px solid var(--study-line); padding: 4px 11px; margin: 0 0 14px; }
+.topic-situation b { font-size: .87rem; color: var(--study-muted); }
+.walk-page .art .topic-situation p { margin: 3px 0 0; }
+.topic-figure { margin: 16px 0; }
+.topic-figure figcaption { text-align: left; font-size: 1rem; }
+.topic-cell h5 { margin: 0 0 5px; overflow-wrap: anywhere; }
+.walk-page .art .topic-cell p:last-child { margin: 0; font-size: .93rem; color: #343640; line-height: 1.55; }
+.topic-figure--3 .topic-cell:last-child, .topic-figure--5 .topic-cell:last-child { grid-column: 1 / -1; }
+.topic-diagram .fig { margin: 12px 0; border: 1px solid var(--study-line); border-radius: 9px; }
+.topic-example, .topic-recall { border: 1px solid var(--study-line); border-radius: 8px; margin: 9px 0 12px; }
+.topic-example > summary, .topic-recall > summary { min-height: 44px; padding: 10px; cursor: pointer; }
+.topic-recall { background: var(--study-panel); }
+.topic-recall > summary span { color: var(--ink); font-size: .87rem; font-weight: 800; display: block; }
+.topic-recall > div { border-top: 1px solid var(--study-line); padding: 8px 10px; }
+.walk-page .art :is(.topic-example, .topic-recall) p { margin: 0; }
+.walk-page .art .topic-example p { padding: 0 10px 10px; white-space: pre-line; }
+.topic-recall b { color: var(--study-green); font-size: .87rem; }
+.topic-guide > h4 { margin: 20px 0 7px; font-size: calc(var(--nfs) + 3px); font-weight: 820; line-height: 1.35; }
+.topic-guide > h4:first-child { margin-top: 0; }
+.oci-scores { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 6px; }
+.oci-scores > div { min-width: 0; padding: 9px; border-radius: 8px; border: 1px solid var(--study-line); background: var(--study-panel); }
+.oci-scores span, .oci-scores strong { display: block; }
+.oci-scores span { font-size: .82rem; color: var(--study-muted); }
+.oci-scores strong { font-size: clamp(1.35rem, 4vw, 1.9rem); line-height: 1.3; font-variant-numeric: tabular-nums; }
+.oci-scores > div:last-child strong { color: var(--study-green); }
+.oci-scores--result { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); margin: 5px 0 10px; }
+.oci-game[data-asset="share"] .oci-scores--result > div:last-child strong { color: var(--ink); }
+.walk-page .art .oci-unit { margin: 3px 0 8px; color: var(--study-muted); font-size: .8rem; }
+@media(max-width: 440px) {
+  .topic-cell { padding: 8px; }
+  .walk-page .art .topic-cell p:last-child { font-size: .89rem; }
+  .oci-scores { gap: 4px; }
+  .oci-scores > div { padding: 5px; }
+}
