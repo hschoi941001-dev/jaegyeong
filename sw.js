@@ -1,6 +1,6 @@
 // Offline cache. Bump VERSION when files change.
-const VERSION = 'jg-v5';
-const ASSETS = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
+const VERSION = 'jg-v6';
+const ASSETS = ['./', 'index.html', 'quest.css', 'quest.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
 const DATA = [
   'data/notes-FA.json', 'data/notes-TX.json', 'data/notes-CM.json',
   'data/q-FA.json', 'data/q-TX.json', 'data/q-CM.json',
@@ -46,3 +46,4 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(e.request, {ignoreSearch: true}).then(r => r || (e.request.mode === 'navigate' ? caches.match('index.html') : Response.error())))
   );
 });
+
