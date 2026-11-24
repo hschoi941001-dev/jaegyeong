@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when files change.
-const VERSION = 'jg-v9';
+const VERSION = 'jg-v10';
 const ASSETS = ['./', 'index.html', 'quest.css', 'quest.js', 'easy-notes.js', 'lab-data.js', 'lab.js', 'lab.css', 'walkthrough-data.js', 'walkthrough.js', 'walkthrough.css', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
 const DATA = [
   'data/notes-FA.json', 'data/notes-TX.json', 'data/notes-CM.json',

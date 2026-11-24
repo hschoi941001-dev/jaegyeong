@@ -1,56 +1,152 @@
-.walk-intro {
-  background: var(--surface); color: var(--ink); border: 1px solid var(--well);
-  border-top: 4px solid var(--tt); border-radius: 14px; margin: 20px 0 14px;
-  padding: clamp(14px, 4vw, 25px); scroll-margin-top: 78px;
+.walk-page {
+  --study-line: #dfdfe3;
+  --study-panel: #f7f7f8;
+  --study-muted: #505760;
+  --study-green: #126b46;
+  --study-red: #a53e36;
+  --study-amber: #80540b;
+  margin: 0 auto;
 }
-.walk-intro > h2 { margin: 0 0 6px; font-size: clamp(1.35rem, 4vw, 1.85rem); line-height: 1.3; letter-spacing: -.03em; }
-.walk-intro > p, .liquidity-guide > p { margin: 8px 0; font-size: var(--nfs); line-height: 1.65; }
-.walk-intro .walk-scene { color: var(--tt); margin: 4px 0; font-weight: 750; font-size: .9rem; }
-.walk-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
-.walk-view { color: var(--ink); background: var(--well2); border: 1px solid var(--well); padding: 10px 12px; border-radius: 9px; }
-.walk-view:first-child { background: var(--tf); }
-.walk-view > h3, .walk-view > h5 { color: var(--tt); font-size: .98rem; margin: 0 0 4px; line-height: 1.4; font-weight: 810; }
-.walk-view > p { font-size: var(--nfs); line-height: 1.55; margin: 0; }
-.walk-takeaway { border-left: 3px solid var(--tt); padding: 7px 10px; background: var(--tf); border-radius: 0 7px 7px 0; }
-.walk-takeaway strong { display: block; color: var(--tt); font-size: .87rem; }
+.walk-page > .wrap { max-width: 760px; }
+.walk-page .nhero { background: transparent; border-radius: 0; margin: 0; padding: 18px 0 10px; }
+.walk-page .nhero h1 { font-size: clamp(1.55rem, 3.8vw, 2.2rem); line-height: 1.31; margin-top: 5px; }
+.walk-page .nhero .en { color: var(--study-muted); }
+.walk-page .art { margin: 5px 0 22px; padding: 20px 0 6px; border-radius: 0; background: transparent; border-top: 1px solid var(--study-line); }
+.walk-page .art.hit { box-shadow: none; border-top-color: var(--tt); }
+.walk-page .art .lc span { padding: 0; background: none; color: var(--study-muted); }
+.walk-page .art h3 { font-size: clamp(1.25rem, 3.2vw, 1.65rem); line-height: 1.3; margin-bottom: 18px; }
+.walk-page .side a { border-radius: 7px; }
+.walk-page .side a.on { background: var(--study-panel); }
+.walk-intro { margin: 22px 0 17px; padding: 17px 0 2px; border-top: 1px solid var(--study-line); scroll-margin-top: 78px; }
+.walk-intro > h2 { margin: 0 0 7px; font-size: clamp(1.4rem, 4vw, 1.9rem); line-height: 1.3; letter-spacing: -.035em; }
+.walk-intro > p, .walk-page .liquidity-guide > p { margin: 10px 0 13px; font-size: var(--nfs); line-height: 1.7; }
+.walk-intro .walk-scene { color: var(--study-muted); margin: 0 0 4px; font-size: .86rem; }
+.walk-compare, .company-compare, .balance-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0; }
+.walk-view, .company-case { border: 1px solid var(--study-line); border-radius: 10px; padding: 12px 14px; }
+.walk-view:first-child { background: var(--study-panel); }
+.walk-view > h3, .walk-view > h5 { margin: 0 0 5px; color: var(--ink); font-size: .99rem; line-height: 1.4; font-weight: 820; }
+.walk-view > p { margin: 0; font-size: var(--nfs); line-height: 1.57; }
+.walk-takeaway { border-left: 2px solid var(--study-line); padding: 5px 11px; }
+.walk-takeaway strong { color: var(--ink); display: block; font-size: .9rem; }
 .walk-recall { padding: 0 0 9px; font-size: var(--nfs); }
-.walk-recall .easy-recall h3 { margin: 10px 0 4px; }
+.walk-recall .easy-recall { border-color: var(--study-line); background: var(--study-panel); }
+.walk-recall .easy-recall h3 { margin: 10px 0 4px; color: var(--ink); }
 .walk-recall .easy-recall p { margin: 0; }
-.walk-topic { color: var(--ink); background: var(--tf); border-left: 3px solid var(--tt); border-radius: 0 8px 8px 0; padding: 9px 12px; margin: 10px 0 12px; }
+.walk-topic { margin: 10px 0 12px; }
 .walk-topic p { margin: 0; }
-.walk-exam { border: 1px solid var(--well); border-radius: 9px; margin: 13px 0 5px; }
-.walk-exam > summary { padding: 10px 12px; cursor: pointer; color: var(--tt); font-size: .92rem; font-weight: 780; min-height: 44px; }
-.walk-exam[open] > summary { border-bottom: 1px solid var(--well); }
+.walk-exam { border: 1px solid var(--study-line); border-radius: 9px; margin: 13px 0 5px; }
+.walk-exam > summary { padding: 10px 12px; cursor: pointer; color: var(--study-muted); font-size: .91rem; font-weight: 760; min-height: 44px; }
+.walk-exam[open] > summary { border-bottom: 1px solid var(--study-line); }
 .walk-exam__body { padding: 12px; }
 .walk-exam-toggle { margin: 7px 0 10px; }
+.walk-page .easy-nav button, .walk-page .easy-nav a { border: 1px solid var(--study-line); color: var(--ink); background: var(--study-panel); }
+.walk-page .easy-nav :is(button,a):first-child { color: var(--surface); background: var(--ink); border-color: var(--ink); }
+
 .liquidity-guide { font-size: var(--nfs); }
-.liquidity-guide > h4 { margin: 21px 0 6px; font-size: calc(var(--nfs) + 2px); color: var(--tt); font-weight: 850; line-height: 1.4; }
+.liquidity-guide > h4 { margin: 25px 0 6px; font-size: calc(var(--nfs) + 3px); color: var(--ink); font-weight: 850; line-height: 1.4; }
 .liquidity-guide > h4:first-child { margin-top: 8px; }
-.liquidity-guide .walk-view > strong { display: block; margin: 2px 0 4px; }
-.liquidity-game { padding: 12px; margin: 12px 0; border-radius: 10px; background: var(--well2); border: 1px solid var(--well); }
+.balance-figure { border: 1px solid var(--study-line); border-radius: 12px; margin: 17px 0; padding: 13px; }
+.balance-figure figcaption { font-size: 1.05rem; color: var(--ink); font-weight: 850; text-align: center; }
+.balance-grid { margin: 11px 0 0; }
+.balance-cell { position: relative; padding: 11px 12px; border-radius: 8px; background: var(--cell-bg); color: #24252a; min-width: 0; }
+.balance-cell--cash { --cell-bg: #e5f3ec; --cell-mark: #26734a; }
+.balance-cell--due { --cell-bg: #fbece6; --cell-mark: #9b4b37; }
+.balance-cell--asset { --cell-bg: #eaf0f8; --cell-mark: #386184; }
+.balance-cell--debt { --cell-bg: #f0eaf8; --cell-mark: #6b508a; }
+.balance-cell h5 { margin: 0 0 4px; font-size: .97rem; line-height: 1.4; }
+.walk-page .art .balance-cell p { color: #24252a; margin: 0; font-size: .94rem; line-height: 1.42; }
+.walk-page .art .balance-cell p:last-child { color: #50505a; font-size: .81rem; margin-top: 4px; }
+.balance-icon { display: inline-block; width: 22px; height: 15px; position: relative; margin-bottom: 3px; border: 2px solid var(--cell-mark); border-radius: 4px; }
+.balance-icon::after { content: ''; position: absolute; top: 3px; left: 7px; width: 5px; height: 5px; border: 1.5px solid var(--cell-mark); border-radius: 50%; }
+.balance-cell--due .balance-icon { width: 19px; border-radius: 3px; box-shadow: inset 0 4px 0 color-mix(in srgb,var(--cell-mark) 25%,transparent); }
+.balance-cell--asset .balance-icon { width: 17px; height: 17px; border-radius: 2px 2px 0 0; box-shadow: 5px 4px 0 -2px var(--cell-mark); }
+.balance-cell--debt .balance-icon { width: 20px; height: 16px; border-radius: 2px; box-shadow: inset 0 3px 0 color-mix(in srgb,var(--cell-mark) 25%,transparent); }
+
+.company-case h5 { margin: 0 0 7px; font-size: 1.05rem; font-weight: 850; }
+.company-line span, .company-line strong { display: block; }
+.company-line span { color: var(--study-muted); font-size: .88rem; }
+.company-line strong { color: var(--study-green); font-size: clamp(1.1rem, 3vw, 1.45rem); font-variant-numeric: tabular-nums; }
+.company-line i { display: block; width: 33.333%; height: 9px; margin: 3px 0 8px; border-radius: 6px; background: #2f956a; }
+.company-line--loan strong { color: var(--study-red); }
+.company-line--loan i { width: 100%; background: #c45951; }
+.company-case:last-child .company-line--loan strong { color: var(--ink); }
+.company-case:last-child .company-line--loan i { background: #8794a5; }
+.walk-page .art .company-result { border-top: 1px solid var(--study-line); padding-top: 8px; color: var(--study-muted); font-size: .88rem; line-height: 1.5; margin: 9px 0 0; }
+.company-case:first-child .company-result strong { color: var(--study-red); }
+.company-case:last-child .company-result strong { color: var(--study-green); }
+.bank-dialogue { display: grid; gap: 7px; margin: 14px 0; }
+.walk-page .art .bank-dialogue p { border-radius: 9px; padding: 7px 10px; background: var(--study-panel); margin: 0; max-width: 88%; }
+.walk-page .art .bank-dialogue p:last-child { justify-self: end; background: transparent; border: 1px solid var(--study-line); }
+.bank-dialogue b { display: block; font-size: .85rem; color: var(--study-muted); }
+
+.liquidity-game, .liquidity-practice { padding: clamp(11px, 2.5vw, 16px); margin: 13px 0; border-radius: 12px; background: var(--study-panel); border: 1px solid var(--study-line); }
 .liquidity-game fieldset, .liquidity-practice fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
-.liquidity-game legend, .liquidity-practice legend { font-weight: 750; padding: 0; }
-.liquidity-game label { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin-right: 12px; cursor: pointer; }
-.liquidity-game input { accent-color: var(--tt); }
-.liquidity-timeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
-.liquidity-timeline > * { display: grid; place-items: center; min-height: 51px; text-align: center; color: var(--ink2); background: var(--surface); border: 1px solid var(--well); border-radius: 6px; font-size: .86rem; line-height: 1.35; }
-.liquidity-timeline > b { border-color: var(--tt); color: var(--tt); }
-.liquidity-timeline > .picked { background: var(--tt); color: var(--surface); font-weight: 800; }
-.liquidity-result strong { color: var(--tt); font-size: clamp(1.15rem, 4vw, 1.65rem); font-variant-numeric: tabular-nums; }
-.liquidity-game > p { margin: 4px 0 0; }
-.walk-table { border: 1px solid var(--well); border-radius: 8px; overflow: auto; }
+.liquidity-game legend, .liquidity-practice legend { font-weight: 775; padding: 0; }
+.liquidity-game label { display: inline-flex; align-items: center; gap: 5px; min-height: 44px; margin-right: 12px; cursor: pointer; }
+.liquidity-game input { accent-color: var(--study-green); }
+.liquidity-game .liquidity-timeline { position: relative; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); isolation: isolate; list-style: none; padding: 13px 0 4px; margin: 2px 0 12px; }
+.liquidity-timeline::before, .liquidity-timeline::after { content: ''; position: absolute; pointer-events: none; }
+.liquidity-timeline::before { left: 12.5%; right: 12.5%; top: 38px; border-top: 2px solid #8d97a4; }
+.liquidity-timeline::after { left: 62.5%; inset-block: 4px 0; border-left: 2px dashed #bd8d3c; z-index: -1; }
+.liquidity-timeline > li { position: relative; text-align: center; color: var(--study-muted); font-size: .88rem; line-height: 1.25; margin: 0; min-width: 0; }
+.liquidity-timeline > li::after { content: ''; position: absolute; top: 19px; left: 50%; width: 12px; height: 12px; border-radius: 50%; background: #8d97a4; transform: translateX(-50%); }
+.timeline-event { display: block; line-height: 16px; min-height: 16px; }
+.liquidity-timeline time { display: inline-block; padding: 1px 4px; margin-top: 20px; border-radius: 4px; background: var(--study-panel); font-weight: 790; font-variant-numeric: tabular-nums; }
+.liquidity-timeline .timeline-close { color: var(--study-amber); }
+.liquidity-timeline .timeline-close::after { background: #bd8d3c; }
+.liquidity-timeline .picked::after { background: #c45951; width: 16px; height: 16px; top: 17px; }
+[data-agreed="before"] .liquidity-timeline .picked::after { background: #2f956a; }
+.liquidity-timeline .picked time { color: var(--ink); }
+.liquidity-timeline .picked .timeline-event { font-weight: 800; }
+.walk-page .art .liquidity-result-label { margin: 4px 0 5px; color: var(--study-muted); font-size: .86rem; }
+.liquidity-result { border-block: 1px solid var(--study-line); gap: 5px; margin: 4px 0 9px; }
+.liquidity-result .walk-view { border: 0; background: none; padding: 8px 0; color: var(--study-muted); font-size: .94rem; }
+.liquidity-result strong { display: block; color: var(--ink); font-size: clamp(1.35rem, 4vw, 1.75rem); font-variant-numeric: tabular-nums; line-height: 1.2; }
+[data-agreed="after"] [data-current] { color: var(--study-red); }
+[data-agreed="before"] [data-long] { color: var(--study-green); }
+.walk-page .art [data-liquidity-result] { margin: 4px 0 0; }
+.walk-table { border: 1px solid var(--study-line); border-radius: 8px; overflow: auto; }
 .walk-table table { width: 100%; min-width: 440px; border-collapse: collapse; font-size: .9rem; }
-.walk-table th, .walk-table td { padding: 8px; border-bottom: 1px solid var(--well); text-align: left; vertical-align: top; }
-.walk-table thead { background: var(--tf); color: var(--tt); }
+.walk-table th, .walk-table td { padding: 8px; border-bottom: 1px solid var(--study-line); text-align: left; vertical-align: top; }
+.walk-table thead { background: var(--study-panel); color: var(--ink); }
 .walk-table tbody th { width: 26%; }
 .liquidity-traps { margin: 10px 0; padding-inline-start: 21px; }
 .liquidity-traps li { margin-bottom: 7px; }
-.liquidity-practice fieldset { border-bottom: 1px solid var(--well); margin: 0 0 9px; padding-bottom: 9px; }
-.liquidity-practice button { color: var(--ink); background: var(--well); border: 1px solid var(--well); border-radius: 6px; min-height: 44px; padding: 4px 9px; margin: 5px 4px 0 0; }
-.liquidity-practice button[aria-pressed="true"] { border-color: var(--tt); background: var(--tf); color: var(--tt); font-weight: 750; }
-.liquidity-practice .liquidity-feedback { margin: 5px 0 0; padding: 5px 8px; background: var(--well2); border-left: 2px solid var(--ok); }
-.liquidity-feedback[data-result="wrong"] { border-left-color: var(--warn); }
-@media (max-width: 440px) {
+.liquidity-progress { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.liquidity-progress span { color: var(--study-muted); font-size: .86rem; }
+.liquidity-practice fieldset { border-bottom: 1px solid var(--study-line); margin: 0 0 14px; padding-bottom: 12px; }
+.liquidity-practice fieldset:last-child { border: 0; margin: 0; padding-bottom: 0; }
+.liquidity-practice button { display: block; width: 100%; text-align: left; color: var(--ink); background: transparent; border: 1px solid var(--study-line); border-radius: 7px; min-height: 44px; padding: 5px 9px; margin: 5px 0 0; }
+.liquidity-practice button[aria-pressed="true"] { border-color: var(--tt); background: var(--surface); color: var(--ink); font-weight: 750; }
+.walk-page .art .liquidity-feedback { margin: 5px 0 0; padding: 5px 8px; background: var(--well2); border-left: 2px solid var(--study-green); }
+.walk-page .art .liquidity-feedback[data-result="wrong"] { border-left-color: var(--study-red); }
+
+.walk-page .lab {
+  --lab-deep: var(--study-panel); --lab-ink: var(--ink); --lab-paper: var(--surface);
+  --lab-accent: var(--tt); --lab-border: var(--study-line); --lab-lilac: var(--study-panel);
+  background: var(--study-panel); color: var(--ink); box-shadow: none; border-radius: 12px;
+}
+.walk-page .lab__scenario, .walk-page .lab__header p { color: var(--study-muted); }
+.walk-page .lab__secondary, .walk-page .lab__modes button { color: var(--ink); background: var(--surface); border-color: var(--study-line); }
+.walk-page .lab__modes button[aria-pressed="true"] { color: var(--surface); background: var(--ink); border-color: var(--ink); }
+.walk-page :is(.lab-board,.lab-sim) { background-image: none; border: 1px solid var(--study-line); }
+.walk-page .lab-ticket p, .walk-page .lab-bin { color: #242439; }
+.walk-page .lab__feedback { color: var(--study-muted); background: transparent; }
+.walk-page .lab__feedback[data-status="good"] { color: var(--study-green); }
+.walk-page .lab__feedback[data-status="retry"] { color: var(--study-amber); }
+
+@media(min-width: 1000px) {
+  .nlay.walk-page { grid-template-columns: 190px minmax(0, 760px); gap: 34px; justify-content: center; }
+}
+@media(max-width: 445px) {
   .walk-intro .walk-compare { grid-template-columns: 1fr; }
-  .liquidity-guide .walk-view { padding: 7px 8px; }
+  .balance-cell, .company-case { padding: 8px; }
+  .balance-figure { padding: 8px; }
+  .liquidity-timeline > li { font-size: .74rem; }
+}
+@media(prefers-color-scheme: dark) {
+  .walk-page {
+    --study-line: #34353b; --study-panel: #1b1c20; --study-muted: #b7bac3;
+    --study-green: #75cca2; --study-red: #fa9991; --study-amber: #efbe6c;
+  }
 }
