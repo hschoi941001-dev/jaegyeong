@@ -41,7 +41,7 @@ function questDesk(f) {
   }).join('');
   return `<section class="quest-desk" aria-labelledby="quest-desk-title">
     <div class="quest-desk__head"><div><h2 id="quest-desk-title">회계팀 출근하기</h2>
-      <p>실무 사례를 한 컷씩 보고, 내가 담당자가 되어 문제를 풀어요.</p></div>
+      <p>숫자를 움직이고 거래 카드를 정리한 뒤, 시험형 문제를 풀어요.</p></div>
       <div class="quest-desk__progress"><b>${done} / ${available.length}</b><span>완료한 장</span></div>
     </div>
     <div class="quest-rooms">${rooms}</div>
