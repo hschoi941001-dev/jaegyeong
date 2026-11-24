@@ -393,6 +393,22 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 .lesson-detail[open] summary{margin-bottom:12px}
 .lesson-detail p:last-child{margin-bottom:0}
 @media (max-width:480px){.lesson-case{padding:14px}.lesson-table th,.lesson-table td{padding:8px}}
+/* Beginner explanations and recall prompts */
+.easy-intro{margin:22px 0 18px;padding:clamp(15px,4vw,24px);border:1px solid color-mix(in srgb,var(--tt) 35%,var(--surface));border-top:4px solid var(--tt);border-radius:14px;background:var(--surface)}
+.easy-intro h2{margin:0 0 6px;color:var(--tt);font-size:1.38rem;line-height:1.25;font-weight:850}
+.easy-intro p,.easy-topic p{margin:0;font-size:var(--nfs);line-height:1.65}
+.easy-memory{margin-top:13px;padding:11px 13px;border-radius:9px;background:var(--tf)}
+.easy-memory b,.easy-topic b{display:block;color:var(--tt);font-size:0.87rem;margin-bottom:3px}
+.easy-recall{margin:12px 0 0;padding:0 12px 10px;border:1px solid color-mix(in srgb,var(--tt) 32%,var(--surface));border-radius:9px}
+.easy-recall h3{margin:10px 0 4px;font-size:0.92rem;color:var(--tt)}
+.easy-recall summary{min-height:38px;padding:7px 0;color:var(--tt);font-weight:750;cursor:pointer}
+.easy-recall .easy-answer{border-top:1px solid var(--well);padding-top:8px;font-weight:650}
+.easy-nav{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.easy-nav button,.easy-nav a{display:inline-flex;align-items:center;min-height:44px;padding:7px 11px;text-decoration:none;border:1px solid var(--tt);border-radius:8px;background:var(--surface);color:var(--tt);font-size:0.88rem;font-weight:750}
+.easy-nav button:first-child{background:var(--tf)}
+.easy-topic{margin:0 0 15px;padding:12px 14px;background:var(--tf);border-radius:9px}
+.easy-exam-label{margin:0 0 7px;font-size:0.9rem;font-weight:800;color:var(--tt)}
+@media(max-width:400px){.easy-nav button,.easy-nav a{min-height:44px;padding-inline:8px}}
 </style>
 <link rel="stylesheet" href="quest.css">
 <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
@@ -408,6 +424,7 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 <body>
 <div id="app"></div>
 <script src="quest.js"></script>
+<script src="easy-notes.js"></script>
 <script>
 const SUBJ = ['FA','TX','CM'];
 const TN = {FA:'재무회계',TX:'세무회계',CM:'원가관리회계',X:'기타'};
@@ -960,15 +977,30 @@ function lessonBlocks(lesson){
   const pitfall = lesson.pitfall ? `<div class="lesson-trap"><strong>시험에서 헷갈리기 쉬운 부분</strong>${inl(lesson.pitfall)}</div>` : '';
   return steps + table + pitfall;
 }
-function secHTML(n, s, i){
+function easyIntro(n, easy, cases, quiz){
+  return `<section class="easy-intro" aria-labelledby="easy-title">
+    <h2 id="easy-title">먼저, 쉽게 이해하기</h2>
+    <p>${inl(easy.setup)}</p>
+    <div class="easy-memory"><b>한 줄 암기</b><p>${inl(easy.memory)}</p></div>
+    <div class="easy-recall"><h3>시험 직전, 답을 떠올려 보기</h3><p>${inl(easy.question)}</p>
+      <details><summary>정답과 이유 보기</summary><p class="easy-answer">${inl(easy.answer)}</p></details></div>
+    <nav class="easy-nav" aria-label="이 장 공부하기">
+      <button type="button" data-go="s-core">개념 설명</button>
+      ${cases.length ? '<button type="button" data-go="note-quest">실무 스토리</button>' : ''}
+      ${quiz ? `<a href="#/mission/${n.r}">개념 확인 ${quiz}문제</a>` : ''}
+    </nav>
+  </section>`;
+}
+function secHTML(n, s, i, easy){
   const los = (s.los||[]).map(l => `<span>${esc(l)}</span>`).join('');
   const body = (s.p||[]).map(p => `<p>${inl(p)}</p>`).join('');
+  const primer = easy ? `<div class="easy-topic"><b>이렇게 생각해요</b><p>${inl(easy)}</p></div><h4 class="easy-exam-label">시험 기준과 예시</h4>` : '';
   const hook = s.hook ? `<div class="hook"><div class="l">쉽게 말하면</div><div>${inl(s.hook)}</div></div>` : '';
   const ex = s.ex ? `<details class="ex"><summary>예시로 풀어 보기<span class="hint">펼치기</span></summary><div>${inl(s.ex)}</div></details>` : '';
   const key = (s.key||[]).length ? `<div class="key"><div class="l">꼭 기억할 것</div><ul>${s.key.map(k => `<li>${inl(k)}</li>`).join('')}</ul></div>` : '';
   const fig = s.fig && s.fig.svg ? `<figure class="fig">${s.fig.svg}${s.fig.cap ? `<figcaption>${inl(s.fig.cap)}</figcaption>` : ''}</figure>` : '';
   const detail = s.detail?.length ? `<details class="lesson-detail" open><summary>세부 기준과 예외</summary>${s.detail.map(p => `<p>${inl(p)}</p>`).join('')}</details>` : '';
-  return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${hook}${body}${fig}${lessonBlocks(s)}${detail}${ex}${key}</article>`;
+  return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${primer}${hook}${body}${fig}${lessonBlocks(s)}${detail}${ex}${key}</article>`;
 }
 function noteView(r, losCode){
   const n = noteBy(r); if (!n) return nav('#/notes');
@@ -977,17 +1009,19 @@ function noteView(r, losCode){
   const fs = load('fs', 17); document.documentElement.style.setProperty('--nfs', fs + 'px');
   const secs = [], dq = relQ(n.r).length, cq = STUDY[n.r]?.length || 0;
   const cases = questCases(n);
+  const easy = DATA === 'data' && typeof EASY_NOTES !== 'undefined' ? EASY_NOTES[n.r] : null;
   const studyCase = n.study?.case ? `<article class="art">${lessonBlocks(n.study)}</article>` : '';
   const toc = (n.sec||[]).map((s, j) => `<a href="#" data-a="${j}"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('');
   const losList = (n.los||[]).length ? `<details class="los"><summary>이 장의 학습목표 ${n.los.length}개</summary><ul>${n.los.map(l => { const m = String(l).match(/^(\d+\.[a-z])\s*[:.)]?\s*(.*)$/i); return `<li>${m ? `<b>${m[1]}</b><span>${inl(m[2])}</span>` : `<span>${inl(l)}</span>`}</li>`; }).join('')}</ul></details>` : '';
-  secs.push(['core', '개념 설명', (n.sec||[]).length, `<div class="toc">${toc}</div>${losList}<div style="height:16px"></div>` + studyCase + (n.sec||[]).map((s, j) => secHTML(n, s, j)).join('')]);
+  secs.push(['core', '개념 설명', (n.sec||[]).length, `<div class="toc">${toc}</div>${losList}<div style="height:16px"></div>` + studyCase + (n.sec||[]).map((s, j) => secHTML(n, s, j, easy?.sections[s.h])).join('')]);
   if ((n.fx||[]).length) secs.push(['fx', '공식·한도', n.fx.length, n.fx.map(f => fxCard(n, f)).join('')]);
   if ((n.trap||[]).length) secs.push(['trap', '시험 함정', n.trap.length, n.trap.map(t => `<div class="trap"><span class="i">!</span><span>${inl(t)}</span></div>`).join('')]);
   if ((n.terms||[]).length) secs.push(['terms', '용어', n.terms.length, `<div class="terms">${n.terms.map(t => `<div class="term"><span class="en">${inl((t||[])[0])}</span><span class="ko">${inl((t||[])[1]||'')}</span></div>`).join('')}</div>`]);
   if (cq) secs.push(['quiz', '개념 확인', cq, `<div class="art"><p>보기를 고르면 정답과 네 보기의 해설을 바로 확인할 수 있어요. 틀린 문제는 오답 복습함에 들어가요.</p><a class="lesson-action" href="#/check/${n.r}">4지선다 ${cq}문제 풀기</a></div>`]);
   if ((n.chk||[]).length) secs.push(['chk', '자가 점검', n.chk.length, n.chk.map((c, j) => `<details class="qa"><summary><span class="q">Q${j+1}</span><span>${inl(c.q)}</span><span class="hint">답 보기</span></summary><div class="a">${inl(c.a)}</div></details>`).join('')]);
-  const side = `<div class="sh">목차</div>${cases.length ? '<a href="#" data-go="note-quest" class="sg">실무 스토리</a>' : ''}<a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
+  const side = `<div class="sh">목차</div><a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
     + (n.sec||[]).map((s, j) => `<a href="#" data-go="a-${j}" class="si"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('')
+    + (cases.length ? '<a href="#" data-go="note-quest" class="sg">실무 스토리</a>' : '')
     + secs.slice(1).map(s => `<a href="#" data-go="s-${s[0]}" class="sg">${s[1]}<small>${s[2]}</small></a>`).join('');
   const lab = x => `${TN[x.tp]} ${chap(x.r)}`;
   paint(`<div class="rprog tp-${n.tp}" id="rp"></div><div class="bar nbar tp-${n.tp}"><div class="in">
@@ -998,18 +1032,19 @@ function noteView(r, losCode){
   </div></div>
   <div class="nlay tp-${n.tp}"><nav class="side" id="side" aria-label="목차">${side}</nav><div class="wrap">
     <div class="nhero rise"><div class="sub"><span class="dot"></span>${lab(n)}</div><h1>${esc(n.t)}</h1>${n.k ? `<div class="en">${esc(n.k)}</div>` : ''}${n.tp === 'TX' ? `<div class="taxnote" style="margin:12px 0 0">${TAXNOTE}</div>` : ''}
-    ${cases.length ? questPanel(n, cases) : ''}
+    ${easy ? easyIntro(n, easy, cases, cq) : ''}
     <div id="note-intro">${n.one ? `<p class="one">${inl(n.one)}</p>` : ''}
     ${cq ? `<a class="drill lesson-quick" href="#/check/${n.r}">개념 확인 문제 풀기<span>${cq}문제</span></a>` : ''}
     ${dq ? `<a class="drill" href="#/drill/${n.r}">이 장 문제 모아 풀기<span>모의고사 ${dq}문제</span></a>` : ''}</div></div>
     <nav class="jump" id="jump"><button class="jtoc" onclick="tocSheet()">${I.menu}목차</button>${secs.map(s => `<a href="#" data-to="${s[0]}">${s[1]} ${s[2]}</a>`).join('')}</nav>
-    ${secs.map(s => `<section class="nsec" id="s-${s[0]}"><h2>${s[1]}<small>${s[2]}</small></h2>${s[3]}</section>`).join('')}
+    ${secs.map(s => `<section class="nsec" id="s-${s[0]}"><h2>${s[1]}<small>${s[2]}</small></h2>${s[3]}</section>${s[0] === 'core' && cases.length ? questPanel(n, cases) : ''}`).join('')}
     ${n.study?.sources?.length ? `<details class="lesson-sources"><summary>학습 기준과 출처</summary><div class="lesson-links">${n.study.sources.map(([label, url]) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join('')}</div></details>` : ''}
     <button class="done ${rd?'on':''}" id="dn" onclick="toggleRead(${n.r})">${rd?I.check+' 읽음 표시됨':I.circle+' 다 읽었음'}</button>
     <div class="pn">${pv ? `<a href="#/note/${pv.r}" onclick="location.replace(this.href);return false"><div class="d">‹ 이전 ${lab(pv)}</div><div class="k">${esc(pv.t)}</div></a>` : '<span></span>'}${nx ? `<a class="nx" href="#/note/${nx.r}" onclick="location.replace(this.href);return false"><div class="d">다음 ${lab(nx)} ›</div><div class="k">${esc(nx.t)}</div></a>` : ''}</div>
   </div></div>`);
   const smooth = matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth';
   if (cases.length) questBind(n, cases, smooth);
+  if (easy) $('.easy-nav').onclick = goSec;
   const jump = $('#jump');
   jump.onclick = e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); $('#s-' + a.dataset.to).scrollIntoView({behavior: smooth}); };
   document.querySelector('.toc').onclick = e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); $('#a-' + a.dataset.a).scrollIntoView({behavior: smooth}); };
@@ -1040,7 +1075,7 @@ function noteView(r, losCode){
   }
 }
 function goSec(e){
-  const a = e.target.closest('a[data-go]'); if (!a) return; e.preventDefault();
+  const a = e.target.closest('[data-go]'); if (!a) return; e.preventDefault();
   $('#sh') && $('#sh').remove();
   $('#' + a.dataset.go).scrollIntoView({behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth'});
 }
@@ -1093,4 +1128,3 @@ boot().catch(() => {}).then(route);
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
 </body>
 </html>
-
