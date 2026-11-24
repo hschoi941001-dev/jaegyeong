@@ -1049,7 +1049,7 @@ function noteView(r, losCode){
     <span class="fsz"><button onclick="fsz(-1)" aria-label="글자 작게" style="font-size:13px">가</button><button onclick="fsz(1)" aria-label="글자 크게" style="font-size:18px">가</button></span>
     <button class="btn icon ghost" id="stb" onclick="toggleStar(${n.r})" aria-label="저장" style="color:${sv?'var(--warn)':'inherit'}">${sv?I.starOn:I.star}</button>
   </div></div>
-  <div class="nlay tp-${n.tp}"><nav class="side" id="side" aria-label="목차">${side}</nav><div class="wrap">
+  <div class="nlay tp-${n.tp}${guided ? ' walk-page' : ''}"><nav class="side" id="side" aria-label="목차">${side}</nav><div class="wrap">
     <div class="nhero rise"><div class="sub"><span class="dot"></span>${lab(n)}</div><h1>${esc(n.t)}</h1>${n.k ? `<div class="en">${esc(n.k)}</div>` : ''}${n.tp === 'TX' ? `<div class="taxnote" style="margin:12px 0 0">${TAXNOTE}</div>` : ''}
     ${guided ? walkIntro(n, guided, labs, cases, cq) : ''}
     ${labs.length ? labHTML(n, labs, cq) : ''}
