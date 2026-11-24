@@ -1,0 +1,56 @@
+.walk-intro {
+  background: var(--surface); color: var(--ink); border: 1px solid var(--well);
+  border-top: 4px solid var(--tt); border-radius: 14px; margin: 20px 0 14px;
+  padding: clamp(14px, 4vw, 25px); scroll-margin-top: 78px;
+}
+.walk-intro > h2 { margin: 0 0 6px; font-size: clamp(1.35rem, 4vw, 1.85rem); line-height: 1.3; letter-spacing: -.03em; }
+.walk-intro > p, .liquidity-guide > p { margin: 8px 0; font-size: var(--nfs); line-height: 1.65; }
+.walk-intro .walk-scene { color: var(--tt); margin: 4px 0; font-weight: 750; font-size: .9rem; }
+.walk-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+.walk-view { color: var(--ink); background: var(--well2); border: 1px solid var(--well); padding: 10px 12px; border-radius: 9px; }
+.walk-view:first-child { background: var(--tf); }
+.walk-view > h3, .walk-view > h5 { color: var(--tt); font-size: .98rem; margin: 0 0 4px; line-height: 1.4; font-weight: 810; }
+.walk-view > p { font-size: var(--nfs); line-height: 1.55; margin: 0; }
+.walk-takeaway { border-left: 3px solid var(--tt); padding: 7px 10px; background: var(--tf); border-radius: 0 7px 7px 0; }
+.walk-takeaway strong { display: block; color: var(--tt); font-size: .87rem; }
+.walk-recall { padding: 0 0 9px; font-size: var(--nfs); }
+.walk-recall .easy-recall h3 { margin: 10px 0 4px; }
+.walk-recall .easy-recall p { margin: 0; }
+.walk-topic { color: var(--ink); background: var(--tf); border-left: 3px solid var(--tt); border-radius: 0 8px 8px 0; padding: 9px 12px; margin: 10px 0 12px; }
+.walk-topic p { margin: 0; }
+.walk-exam { border: 1px solid var(--well); border-radius: 9px; margin: 13px 0 5px; }
+.walk-exam > summary { padding: 10px 12px; cursor: pointer; color: var(--tt); font-size: .92rem; font-weight: 780; min-height: 44px; }
+.walk-exam[open] > summary { border-bottom: 1px solid var(--well); }
+.walk-exam__body { padding: 12px; }
+.walk-exam-toggle { margin: 7px 0 10px; }
+.liquidity-guide { font-size: var(--nfs); }
+.liquidity-guide > h4 { margin: 21px 0 6px; font-size: calc(var(--nfs) + 2px); color: var(--tt); font-weight: 850; line-height: 1.4; }
+.liquidity-guide > h4:first-child { margin-top: 8px; }
+.liquidity-guide .walk-view > strong { display: block; margin: 2px 0 4px; }
+.liquidity-game { padding: 12px; margin: 12px 0; border-radius: 10px; background: var(--well2); border: 1px solid var(--well); }
+.liquidity-game fieldset, .liquidity-practice fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.liquidity-game legend, .liquidity-practice legend { font-weight: 750; padding: 0; }
+.liquidity-game label { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin-right: 12px; cursor: pointer; }
+.liquidity-game input { accent-color: var(--tt); }
+.liquidity-timeline { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+.liquidity-timeline > * { display: grid; place-items: center; min-height: 51px; text-align: center; color: var(--ink2); background: var(--surface); border: 1px solid var(--well); border-radius: 6px; font-size: .86rem; line-height: 1.35; }
+.liquidity-timeline > b { border-color: var(--tt); color: var(--tt); }
+.liquidity-timeline > .picked { background: var(--tt); color: var(--surface); font-weight: 800; }
+.liquidity-result strong { color: var(--tt); font-size: clamp(1.15rem, 4vw, 1.65rem); font-variant-numeric: tabular-nums; }
+.liquidity-game > p { margin: 4px 0 0; }
+.walk-table { border: 1px solid var(--well); border-radius: 8px; overflow: auto; }
+.walk-table table { width: 100%; min-width: 440px; border-collapse: collapse; font-size: .9rem; }
+.walk-table th, .walk-table td { padding: 8px; border-bottom: 1px solid var(--well); text-align: left; vertical-align: top; }
+.walk-table thead { background: var(--tf); color: var(--tt); }
+.walk-table tbody th { width: 26%; }
+.liquidity-traps { margin: 10px 0; padding-inline-start: 21px; }
+.liquidity-traps li { margin-bottom: 7px; }
+.liquidity-practice fieldset { border-bottom: 1px solid var(--well); margin: 0 0 9px; padding-bottom: 9px; }
+.liquidity-practice button { color: var(--ink); background: var(--well); border: 1px solid var(--well); border-radius: 6px; min-height: 44px; padding: 4px 9px; margin: 5px 4px 0 0; }
+.liquidity-practice button[aria-pressed="true"] { border-color: var(--tt); background: var(--tf); color: var(--tt); font-weight: 750; }
+.liquidity-practice .liquidity-feedback { margin: 5px 0 0; padding: 5px 8px; background: var(--well2); border-left: 2px solid var(--ok); }
+.liquidity-feedback[data-result="wrong"] { border-left-color: var(--warn); }
+@media (max-width: 440px) {
+  .walk-intro .walk-compare { grid-template-columns: 1fr; }
+  .liquidity-guide .walk-view { padding: 7px 8px; }
+}

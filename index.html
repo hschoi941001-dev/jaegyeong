@@ -412,6 +412,7 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 </style>
 <link rel="stylesheet" href="quest.css">
 <link rel="stylesheet" href="lab.css">
+<link rel="stylesheet" href="walkthrough.css">
 <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b1018" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -428,6 +429,8 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 <script src="easy-notes.js"></script>
 <script src="lab-data.js"></script>
 <script src="lab.js"></script>
+<script src="walkthrough-data.js"></script>
+<script src="walkthrough.js"></script>
 <script>
 const SUBJ = ['FA','TX','CM'];
 const TN = {FA:'재무회계',TX:'세무회계',CM:'원가관리회계',X:'기타'};
@@ -1000,7 +1003,7 @@ function easyIntro(n, easy, cases, quiz){
     </nav>
   </section>`;
 }
-function secHTML(n, s, i, easy){
+function secHTML(n, s, i, easy, guided){
   const los = (s.los||[]).map(l => `<span>${esc(l)}</span>`).join('');
   const body = (s.p||[]).map(p => `<p>${inl(p)}</p>`).join('');
   const primer = easy ? `<div class="easy-topic"><b>이렇게 생각해요</b><p>${inl(easy)}</p></div><h4 class="easy-exam-label">시험 기준과 예시</h4>` : '';
@@ -1009,7 +1012,10 @@ function secHTML(n, s, i, easy){
   const key = (s.key||[]).length ? `<div class="key"><div class="l">꼭 기억할 것</div><ul>${s.key.map(k => `<li>${inl(k)}</li>`).join('')}</ul></div>` : '';
   const fig = s.fig && s.fig.svg ? `<figure class="fig">${s.fig.svg}${s.fig.cap ? `<figcaption>${inl(s.fig.cap)}</figcaption>` : ''}</figure>` : '';
   const detail = s.detail?.length ? `<details class="lesson-detail" open><summary>세부 기준과 예외</summary>${s.detail.map(p => `<p>${inl(p)}</p>`).join('')}</details>` : '';
-  return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${primer}${hook}${body}${fig}${lessonBlocks(s)}${detail}${ex}${key}</article>`;
+  const reference = hook + body + fig + lessonBlocks(s) + detail + ex + key;
+  const beginner = guided && s.los?.includes('101.e') ? liquidityGuide() : easy ? `<div class="walk-topic"><p>${inl(easy)}</p></div>` : '';
+  const content = guided ? `${beginner}<details class="walk-exam"><summary>시험 기준과 예외 자세히 보기</summary><div class="walk-exam__body">${reference}</div></details>` : primer + reference;
+  return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${content}</article>`;
 }
 const labsFor = r => DATA === 'data' && typeof LAB_GAMES !== 'undefined' && typeof labBind === 'function' ? LAB_GAMES[r] || [] : [];
 function noteView(r, losCode){
@@ -1020,16 +1026,19 @@ function noteView(r, losCode){
   const secs = [], dq = relQ(n.r).length, cq = STUDY[n.r]?.length || 0;
   const cases = questCases(n), labs = labsFor(n.r);
   const easy = DATA === 'data' && typeof EASY_NOTES !== 'undefined' ? EASY_NOTES[n.r] : null;
-  const studyCase = n.study?.case ? `<article class="art">${lessonBlocks(n.study)}</article>` : '';
+  const guided = DATA === 'data' && typeof NOTE_WALKS !== 'undefined' && typeof walkIntro === 'function' ? NOTE_WALKS[n.r] : null;
+  const blocks = n.study?.case ? lessonBlocks(n.study) : '';
+  const studyCase = blocks ? (guided ? `<details class="walk-exam"><summary>추가 실무 예제와 비교표</summary><div class="walk-exam__body">${blocks}</div></details>` : `<article class="art">${blocks}</article>`) : '';
+  const examToggle = guided ? '<button type="button" class="btn sm walk-exam-toggle" id="walk-exam-toggle">시험 기준 전체 펼치기</button>' : '';
   const toc = (n.sec||[]).map((s, j) => `<a href="#" data-a="${j}"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('');
   const losList = (n.los||[]).length ? `<details class="los"><summary>이 장의 학습목표 ${n.los.length}개</summary><ul>${n.los.map(l => { const m = String(l).match(/^(\d+\.[a-z])\s*[:.)]?\s*(.*)$/i); return `<li>${m ? `<b>${m[1]}</b><span>${inl(m[2])}</span>` : `<span>${inl(l)}</span>`}</li>`; }).join('')}</ul></details>` : '';
-  secs.push(['core', '개념 설명', (n.sec||[]).length, `<div class="toc">${toc}</div>${losList}<div style="height:16px"></div>` + studyCase + (n.sec||[]).map((s, j) => secHTML(n, s, j, easy?.sections[s.h])).join('')]);
+  secs.push(['core', '개념 설명', (n.sec||[]).length, `<div class="toc">${toc}</div>${losList}${examToggle}<div style="height:16px"></div>` + studyCase + (n.sec||[]).map((s, j) => secHTML(n, s, j, easy?.sections[s.h], guided)).join('')]);
   if ((n.fx||[]).length) secs.push(['fx', '공식·한도', n.fx.length, n.fx.map(f => fxCard(n, f)).join('')]);
   if ((n.trap||[]).length) secs.push(['trap', '시험 함정', n.trap.length, n.trap.map(t => `<div class="trap"><span class="i">!</span><span>${inl(t)}</span></div>`).join('')]);
   if ((n.terms||[]).length) secs.push(['terms', '용어', n.terms.length, `<div class="terms">${n.terms.map(t => `<div class="term"><span class="en">${inl((t||[])[0])}</span><span class="ko">${inl((t||[])[1]||'')}</span></div>`).join('')}</div>`]);
   if (cq) secs.push(['quiz', '개념 확인', cq, `<div class="art"><p>보기를 고르면 정답과 네 보기의 해설을 바로 확인할 수 있어요. 틀린 문제는 오답 복습함에 들어가요.</p><a class="lesson-action" href="#/check/${n.r}">4지선다 ${cq}문제 풀기</a></div>`]);
   if ((n.chk||[]).length) secs.push(['chk', '자가 점검', n.chk.length, n.chk.map((c, j) => `<details class="qa"><summary><span class="q">Q${j+1}</span><span>${inl(c.q)}</span><span class="hint">답 보기</span></summary><div class="a">${inl(c.a)}</div></details>`).join('')]);
-  const side = `<div class="sh">목차</div>${labs.length ? '<a href="#" data-go="note-lab" class="sg">게임·시각화</a>' : ''}<a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
+  const side = `<div class="sh">목차</div>${guided ? '<a href="#" data-go="walk-intro" class="sg">쉽게 이해하기</a>' : ''}${labs.length ? '<a href="#" data-go="note-lab" class="sg">게임·시각화</a>' : ''}<a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
     + (n.sec||[]).map((s, j) => `<a href="#" data-go="a-${j}" class="si"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('')
     + (cases.length ? '<a href="#" data-go="note-quest" class="sg">실무 스토리</a>' : '')
     + secs.slice(1).map(s => `<a href="#" data-go="s-${s[0]}" class="sg">${s[1]}<small>${s[2]}</small></a>`).join('');
@@ -1042,8 +1051,9 @@ function noteView(r, losCode){
   </div></div>
   <div class="nlay tp-${n.tp}"><nav class="side" id="side" aria-label="목차">${side}</nav><div class="wrap">
     <div class="nhero rise"><div class="sub"><span class="dot"></span>${lab(n)}</div><h1>${esc(n.t)}</h1>${n.k ? `<div class="en">${esc(n.k)}</div>` : ''}${n.tp === 'TX' ? `<div class="taxnote" style="margin:12px 0 0">${TAXNOTE}</div>` : ''}
+    ${guided ? walkIntro(n, guided, labs, cases, cq) : ''}
     ${labs.length ? labHTML(n, labs, cq) : ''}
-    ${easy ? easyIntro(n, easy, cases, cq) : ''}
+    ${easy ? (guided ? walkRecall(easy) : easyIntro(n, easy, cases, cq)) : ''}
     <div id="note-intro">${n.one ? `<p class="one">${inl(n.one)}</p>` : ''}
     ${cq ? `<a class="drill lesson-quick" href="#/check/${n.r}">개념 확인 문제 풀기<span>${cq}문제</span></a>` : ''}
     ${dq ? `<a class="drill" href="#/drill/${n.r}">이 장 문제 모아 풀기<span>모의고사 ${dq}문제</span></a>` : ''}</div></div>
@@ -1056,7 +1066,22 @@ function noteView(r, losCode){
   const smooth = matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth';
   if (labs.length) labBind(n, labs, smooth);
   if (cases.length) questBind(n, cases, smooth);
-  if (easy) $('.easy-nav').onclick = goSec;
+  const navIntro = $('.easy-nav');
+  if (navIntro) navIntro.onclick = goSec;
+  if (guided) {
+    walkBind();
+    const toggle = $('#walk-exam-toggle');
+    toggle.onclick = () => {
+      const details = [...document.querySelectorAll('#s-core .walk-exam')];
+      const expand = details.some(item => !item.open);
+      details.forEach(item => { item.open = expand; });
+      toggle.textContent = expand ? '시험 기준 전체 접기' : '시험 기준 전체 펼치기';
+    };
+    $('#s-core').addEventListener('toggle', () => {
+      const allOpen = !document.querySelector('#s-core .walk-exam:not([open])');
+      toggle.textContent = allOpen ? '시험 기준 전체 접기' : '시험 기준 전체 펼치기';
+    }, true);
+  }
   const jump = $('#jump');
   jump.onclick = e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); $('#s-' + a.dataset.to).scrollIntoView({behavior: smooth}); };
   document.querySelector('.toc').onclick = e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); $('#a-' + a.dataset.a).scrollIntoView({behavior: smooth}); };
@@ -1076,7 +1101,7 @@ function noteView(r, losCode){
         if (a && (a.offsetTop < sd.scrollTop + 40 || a.offsetTop > sd.scrollTop + sd.clientHeight - 60)) sd.scrollTop = a.offsetTop - sd.clientHeight / 3;
       });
     }, {rootMargin: '-130px 0px -60% 0px'});
-    document.querySelectorAll('#note-lab, #note-quest, .nsec, .art').forEach(s => spy.observe(s));
+    document.querySelectorAll('#walk-intro, #note-lab, #note-quest, .nsec, .art').forEach(s => spy.observe(s));
   }
   const rp = $('#rp');
   onscroll = () => { if (!rp.isConnected){ onscroll = null; return; } const h = document.documentElement.scrollHeight - innerHeight; rp.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%'; };
