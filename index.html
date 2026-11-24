@@ -411,6 +411,7 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 @media(max-width:400px){.easy-nav button,.easy-nav a{min-height:44px;padding-inline:8px}}
 </style>
 <link rel="stylesheet" href="quest.css">
+<link rel="stylesheet" href="lab.css">
 <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b1018" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -425,6 +426,8 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 <div id="app"></div>
 <script src="quest.js"></script>
 <script src="easy-notes.js"></script>
+<script src="lab-data.js"></script>
+<script src="lab.js"></script>
 <script>
 const SUBJ = ['FA','TX','CM'];
 const TN = {FA:'재무회계',TX:'세무회계',CM:'원가관리회계',X:'기타'};
@@ -647,7 +650,7 @@ function home(){
   <p class="note" style="margin:-4px 4px 12px">${mode==='exam' ? '시험 모드: 제한 시간이 끝나거나 제출하면 채점.' : '연습 모드: 한 문제씩 바로 해설과 관련 개념을 보여 줌.'}</p>`;
   paint(`<header class="phead"><h1>재경관리사 모의고사</h1><p>실전은 3과목 120문항 150분, 과목별은 40문항 50분. 과목마다 70점 이상이면 합격.</p></header>
   <div class="wrap">${ddayCard()}${lead}${rqCard}
-  ${N.some(questCount) ? `<a class="card quest-list-link" href="#/notes"><b>회계팀 출근하기</b><span>실무 스토리와 미션 보기</span></a>` : ''}
+  ${N.some(questCount) ? `<a class="card quest-list-link" href="#/notes"><b>회계팀 출근하기</b><span>${N.some(n => labsFor(n.r).length) ? '게임·시각화로 공부하기' : '실무 스토리와 미션 보기'}</span></a>` : ''}
   ${ln ? `<a class="card cont tp-${ln.tp}" href="#/note/${ln.r}" style="margin-top:16px"><span class="sp"><span class="s">요약 노트 이어 읽기, ${TN[ln.tp]} ${chap(ln.r)}</span><br><span class="k">${esc(ln.t)}</span></span>${I.chev}</a>` : ''}
   <h2 class="stitle">회차</h2>${ROUNDS.length ? seg + rows : `<div class="card empty"><b>문항 데이터 없음</b>${esc(DATA)}/q-FA.json, q-TX.json, q-CM.json 파일을 확인.</div>`}
   <p class="note" style="margin-top:20px">기록은 이 기기 브라우저에만 저장됨.</p></div>${tabbar('exam')}`);
@@ -947,10 +950,16 @@ function notesList(f){
   drawList(f);
 }
 function drawList(f){
-  const rd = readMap(), sv = starMap(), results = questMap(), q = NQ.trim().toLowerCase();
+  const rd = readMap(), sv = starMap(), results = questMap(), progress = typeof labProgress === 'function' ? labProgress() : {}, q = NQ.trim().toLowerCase();
   let items = N.filter(n => f === 'all' || (f === 'saved' ? sv[n.r] : n.tp === f));
   if (q) items = items.filter(n => n.ix.includes(q));
-  const row = n => `<a class="item tp-${n.tp}" href="#/note/${n.r}"><span class="rno">${n.r % 100}</span><span class="tx"><div class="k">${hl(n.t, q)}</div><div class="e">${hl(n.k || '', q)}</div>${q ? `<div class="snip">${hl(snippet(n, q), q)}</div>` : ''}${questBadge(n, results)}</span><span class="st">${sv[n.r] ? `<span class="sv">${I.starOn}</span>` : ''}${rd[n.r] ? `<span class="rd" aria-label="읽음">${I.check}</span>` : ''}</span></a>`;
+  const gameBadge = n => {
+    const games = labsFor(n.r);
+    if (!games.length) return '';
+    const done = games.every((_, i) => progress[labKey(n.r, i)]);
+    return `<span class="lab-list-tag">${done ? '게임 완료' : LAB_LABELS[games[0].type] + (games.length > 1 ? ` 외 ${games.length - 1}` : '')}</span>`;
+  };
+  const row = n => `<a class="item tp-${n.tp}" href="#/note/${n.r}"><span class="rno">${n.r % 100}</span><span class="tx"><div class="k">${hl(n.t, q)}</div><div class="e">${hl(n.k || '', q)}</div>${q ? `<div class="snip">${hl(snippet(n, q), q)}</div>` : ''}${gameBadge(n)}${questBadge(n, results)}</span><span class="st">${sv[n.r] ? `<span class="sv">${I.starOn}</span>` : ''}${rd[n.r] ? `<span class="rd" aria-label="읽음">${I.check}</span>` : ''}</span></a>`;
   let html = '';
   if (!items.length) html = `<div class="empty"><b>${q ? '‘' + esc(NQ) + '’ 결과 없음' : '저장한 노트 없음'}</b>${q ? '다른 표현으로 검색.' : '노트 오른쪽 위 별을 누르면 여기 모임.'}</div>`;
   else if (q || f === 'saved') html = `<div class="ghead"><span class="n">${q ? '검색 결과' : '저장한 노트'}</span><span class="c" style="margin-left:auto">${items.length}개</span></div><div class="glist">${items.map(row).join('')}</div>`;
@@ -1002,13 +1011,14 @@ function secHTML(n, s, i, easy){
   const detail = s.detail?.length ? `<details class="lesson-detail" open><summary>세부 기준과 예외</summary>${s.detail.map(p => `<p>${inl(p)}</p>`).join('')}</details>` : '';
   return `<article class="art" id="a-${i}" data-los="${esc((s.los||[]).join(' '))}">${los ? `<div class="lc">${los}</div>` : ''}<h3>${inl(s.h)}</h3>${primer}${hook}${body}${fig}${lessonBlocks(s)}${detail}${ex}${key}</article>`;
 }
+const labsFor = r => DATA === 'data' && typeof LAB_GAMES !== 'undefined' && typeof labBind === 'function' ? LAB_GAMES[r] || [] : [];
 function noteView(r, losCode){
   const n = noteBy(r); if (!n) return nav('#/notes');
   save('nlast', n.r);
   const i = N.indexOf(n), pv = N[i-1], nx = N[i+1], sv = starMap()[n.r], rd = readMap()[n.r];
   const fs = load('fs', 17); document.documentElement.style.setProperty('--nfs', fs + 'px');
   const secs = [], dq = relQ(n.r).length, cq = STUDY[n.r]?.length || 0;
-  const cases = questCases(n);
+  const cases = questCases(n), labs = labsFor(n.r);
   const easy = DATA === 'data' && typeof EASY_NOTES !== 'undefined' ? EASY_NOTES[n.r] : null;
   const studyCase = n.study?.case ? `<article class="art">${lessonBlocks(n.study)}</article>` : '';
   const toc = (n.sec||[]).map((s, j) => `<a href="#" data-a="${j}"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('');
@@ -1019,7 +1029,7 @@ function noteView(r, losCode){
   if ((n.terms||[]).length) secs.push(['terms', '용어', n.terms.length, `<div class="terms">${n.terms.map(t => `<div class="term"><span class="en">${inl((t||[])[0])}</span><span class="ko">${inl((t||[])[1]||'')}</span></div>`).join('')}</div>`]);
   if (cq) secs.push(['quiz', '개념 확인', cq, `<div class="art"><p>보기를 고르면 정답과 네 보기의 해설을 바로 확인할 수 있어요. 틀린 문제는 오답 복습함에 들어가요.</p><a class="lesson-action" href="#/check/${n.r}">4지선다 ${cq}문제 풀기</a></div>`]);
   if ((n.chk||[]).length) secs.push(['chk', '자가 점검', n.chk.length, n.chk.map((c, j) => `<details class="qa"><summary><span class="q">Q${j+1}</span><span>${inl(c.q)}</span><span class="hint">답 보기</span></summary><div class="a">${inl(c.a)}</div></details>`).join('')]);
-  const side = `<div class="sh">목차</div><a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
+  const side = `<div class="sh">목차</div>${labs.length ? '<a href="#" data-go="note-lab" class="sg">게임·시각화</a>' : ''}<a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
     + (n.sec||[]).map((s, j) => `<a href="#" data-go="a-${j}" class="si"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('')
     + (cases.length ? '<a href="#" data-go="note-quest" class="sg">실무 스토리</a>' : '')
     + secs.slice(1).map(s => `<a href="#" data-go="s-${s[0]}" class="sg">${s[1]}<small>${s[2]}</small></a>`).join('');
@@ -1032,6 +1042,7 @@ function noteView(r, losCode){
   </div></div>
   <div class="nlay tp-${n.tp}"><nav class="side" id="side" aria-label="목차">${side}</nav><div class="wrap">
     <div class="nhero rise"><div class="sub"><span class="dot"></span>${lab(n)}</div><h1>${esc(n.t)}</h1>${n.k ? `<div class="en">${esc(n.k)}</div>` : ''}${n.tp === 'TX' ? `<div class="taxnote" style="margin:12px 0 0">${TAXNOTE}</div>` : ''}
+    ${labs.length ? labHTML(n, labs, cq) : ''}
     ${easy ? easyIntro(n, easy, cases, cq) : ''}
     <div id="note-intro">${n.one ? `<p class="one">${inl(n.one)}</p>` : ''}
     ${cq ? `<a class="drill lesson-quick" href="#/check/${n.r}">개념 확인 문제 풀기<span>${cq}문제</span></a>` : ''}
@@ -1043,6 +1054,7 @@ function noteView(r, losCode){
     <div class="pn">${pv ? `<a href="#/note/${pv.r}" onclick="location.replace(this.href);return false"><div class="d">‹ 이전 ${lab(pv)}</div><div class="k">${esc(pv.t)}</div></a>` : '<span></span>'}${nx ? `<a class="nx" href="#/note/${nx.r}" onclick="location.replace(this.href);return false"><div class="d">다음 ${lab(nx)} ›</div><div class="k">${esc(nx.t)}</div></a>` : ''}</div>
   </div></div>`);
   const smooth = matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth';
+  if (labs.length) labBind(n, labs, smooth);
   if (cases.length) questBind(n, cases, smooth);
   if (easy) $('.easy-nav').onclick = goSec;
   const jump = $('#jump');
@@ -1064,7 +1076,7 @@ function noteView(r, losCode){
         if (a && (a.offsetTop < sd.scrollTop + 40 || a.offsetTop > sd.scrollTop + sd.clientHeight - 60)) sd.scrollTop = a.offsetTop - sd.clientHeight / 3;
       });
     }, {rootMargin: '-130px 0px -60% 0px'});
-    document.querySelectorAll('#note-quest, .nsec, .art').forEach(s => spy.observe(s));
+    document.querySelectorAll('#note-lab, #note-quest, .nsec, .art').forEach(s => spy.observe(s));
   }
   const rp = $('#rp');
   onscroll = () => { if (!rp.isConnected){ onscroll = null; return; } const h = document.documentElement.scrollHeight - innerHeight; rp.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%'; };
