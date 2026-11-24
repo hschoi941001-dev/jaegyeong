@@ -1,7 +1,11 @@
 // Offline cache. Bump VERSION when files change.
-const VERSION = 'jg-v3';
+const VERSION = 'jg-v5';
 const ASSETS = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
-const DATA = ['data/notes-FA.json', 'data/notes-TX.json', 'data/notes-CM.json', 'data/q-FA.json', 'data/q-TX.json', 'data/q-CM.json'];
+const DATA = [
+  'data/notes-FA.json', 'data/notes-TX.json', 'data/notes-CM.json',
+  'data/q-FA.json', 'data/q-TX.json', 'data/q-CM.json',
+  'data/study-FA.json', 'data/study-TX.json', 'data/study-CM.json'
+];
 const FONT_HOST = 'cdn.jsdelivr.net';
 
 self.addEventListener('install', e => {
@@ -14,7 +18,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k.startsWith('jg-v') && k !== VERSION).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
