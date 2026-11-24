@@ -394,6 +394,7 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 .lesson-detail p:last-child{margin-bottom:0}
 @media (max-width:480px){.lesson-case{padding:14px}.lesson-table th,.lesson-table td{padding:8px}}
 </style>
+<link rel="stylesheet" href="quest.css">
 <meta name="theme-color" content="#eef1f6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b1018" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -406,6 +407,7 @@ mark{background:color-mix(in srgb,var(--acc) 24%,transparent);color:inherit;bord
 </head>
 <body>
 <div id="app"></div>
+<script src="quest.js"></script>
 <script>
 const SUBJ = ['FA','TX','CM'];
 const TN = {FA:'재무회계',TX:'세무회계',CM:'원가관리회계',X:'기타'};
@@ -541,7 +543,7 @@ function route(){
   stopTimer();
   if (v === 'result') return showResult(p[1], +p[2], p[3]);
   if (v === 'again') return againStart();
-  if (v === 'drill' || v === 'check') return drillStart(+p[1], v === 'check');
+  if (v === 'drill' || v === 'check' || v === 'mission') return drillStart(+p[1], v !== 'drill', v === 'mission');
   if (v === 'review') return review(p[1], +p[2], +p[3], p[4]);
   if (v === 'notes') return notesList(p[1] || 'all');
   if (v === 'note') return noteView(+p[1], p[2]);
@@ -628,6 +630,7 @@ function home(){
   <p class="note" style="margin:-4px 4px 12px">${mode==='exam' ? '시험 모드: 제한 시간이 끝나거나 제출하면 채점.' : '연습 모드: 한 문제씩 바로 해설과 관련 개념을 보여 줌.'}</p>`;
   paint(`<header class="phead"><h1>재경관리사 모의고사</h1><p>실전은 3과목 120문항 150분, 과목별은 40문항 50분. 과목마다 70점 이상이면 합격.</p></header>
   <div class="wrap">${ddayCard()}${lead}${rqCard}
+  ${N.some(questCount) ? `<a class="card quest-list-link" href="#/notes"><b>회계팀 출근하기</b><span>실무 스토리와 미션 보기</span></a>` : ''}
   ${ln ? `<a class="card cont tp-${ln.tp}" href="#/note/${ln.r}" style="margin-top:16px"><span class="sp"><span class="s">요약 노트 이어 읽기, ${TN[ln.tp]} ${chap(ln.r)}</span><br><span class="k">${esc(ln.t)}</span></span>${I.chev}</a>` : ''}
   <h2 class="stitle">회차</h2>${ROUNDS.length ? seg + rows : `<div class="card empty"><b>문항 데이터 없음</b>${esc(DATA)}/q-FA.json, q-TX.json, q-CM.json 파일을 확인.</div>`}
   <p class="note" style="margin-top:20px">기록은 이 기기 브라우저에만 저장됨.</p></div>${tabbar('exam')}`);
@@ -808,12 +811,12 @@ let AG = null; // current session: {list, i, pick, ok, drill?}; drill = all ques
 function againStart(){ AG = {list: rqDue(), i: 0, pick: null, ok: 0}; again(); }
 // questions of one chapter (same r), every round
 function relQ(r){ return Object.values(Q).filter(q => q.r === +r && !q.study && graded(q)).sort((a, b) => (+a.rd) - (+b.rd) || a.n - b.n).map(q => q.id); }
-function drillStart(r, study = false){
+function drillStart(r, study = false, mission = false){
   const n = noteBy(r), list = study ? STUDY[r] || [] : relQ(r);
   if (!list.length) return nav(n ? '#/note/' + r : '#/notes');
   AG = {
     list, i: 0, pick: null, ok: 0,
-    drill: {r, h: n ? n.t : chap(r), back: n ? '#/note/' + r : '#/', label: study ? '개념 확인' : '장별 연습'}
+    drill: {r, h: n ? n.t : chap(r), back: n ? '#/note/' + r : '#/', mission, label: mission ? '미션' : study ? '개념 확인' : '장별 연습'}
   };
   again();
 }
@@ -821,6 +824,7 @@ function again(){
   if (!AG) return againStart();
   const dr = AG.drill;
   if (dr && AG.i >= AG.list.length){
+    if (dr.mission) return questMissionResult(dr, AG.ok, AG.list.length);
     paint(`<div class="bar"><div class="in"><button class="btn icon ghost" onclick="location.replace('${dr.back}')" aria-label="노트로">${I.back}</button><span class="qno">${dr.label}</span></div></div>
     <div class="wrap" style="padding-top:12px"><div class="card again-done"><b>${AG.list.length}문제 중 ${AG.ok}문제 맞힘</b><p>${esc(dr.h)}</p>
     ${AG.list.length - AG.ok ? `<p>틀린 ${AG.list.length - AG.ok}문제는 오답 복습함에 넣었어요. 내일 다시 나와요.</p>` : ''}
@@ -844,10 +848,10 @@ function again(){
     : my === x.a ? (now ? `정답, ${RQ_DAYS[now.b]}일 뒤 다시 나와요` : '정답, 복습 졸업') : `오답, 정답은 ${CIRC[x.a]}. 내일 다시 나와요`;
   const res = my ? `<div class="verdict ${my===x.a?'ok-t':'bad-t'}" role="status" tabindex="-1">${verdict}</div>` : '';
   paint(`<div class="bar"><div class="in"><button class="btn icon ghost" onclick="${dr ? `location.replace('${dr.back}')` : `AG=null;nav('#/')`}" aria-label="그만하기">${I.back}</button>
-    <span class="qno">${AG.i+1}<span class="mut" style="font-weight:600"> / ${AG.list.length}</span></span><span class="tag tp-${x.tp}">${TN[x.tp]}</span><span class="sp"></span><span class="note">${x.study ? '개념 확인' : `제${esc(x.rd)}회 Q${x.n}`}${dr ? '' : `, ${ent.w}번 틀림`}</span></div>
+    <span class="qno">${AG.i+1}<span class="mut" style="font-weight:600"> / ${AG.list.length}</span></span><span class="tag tp-${x.tp}">${TN[x.tp]}</span><span class="sp"></span><span class="note">${dr?.mission ? '미션' : x.study ? '개념 확인' : `제${esc(x.rd)}회 Q${x.n}`}${dr ? '' : `, ${ent.w}번 틀림`}</span></div>
     <div class="pbar"><i style="width:${AG.i/AG.list.length*100}%"></i></div></div>
-  <div class="wrap again" style="padding-top:12px"><div class="card">${taxLine(x.tp)}<div class="stem">${rich(x.q)}</div></div>${res}${opts}${my ? vLine(x) : ''}<div id="cbox">${my ? conceptBox(x) : ''}</div></div>
-  ${my ? `<div class="nav"><div class="in"><button class="btn pri" onclick="AG.i++;AG.pick=null;AG.before=null;again()">${AG.i === AG.list.length-1 ? '끝내기' : '다음'}</button></div></div>` : ''}`);
+  <div class="wrap again" style="padding-top:12px">${dr?.mission ? questMissionHead(noteBy(dr.r), AG.i + 1, AG.list.length) : ''}<div class="card">${taxLine(x.tp)}<div class="stem">${rich(x.q)}</div></div>${res}${opts}${my ? vLine(x) : ''}<div id="cbox">${my ? conceptBox(x) : ''}</div></div>
+  ${my ? `<div class="nav"><div class="in"><button class="btn pri" onclick="AG.i++;AG.pick=null;AG.before=null;again()">${AG.i === AG.list.length-1 ? (dr?.mission ? '미션 결과 보기' : '끝내기') : '다음'}</button></div></div>` : ''}`);
 }
 function againPick(o){
   if (!AG || AG.pick) return;
@@ -913,12 +917,12 @@ function notesList(f){
   const chip = (k, label, c) => `<button class="chip ${f===k?'on':''} ${SUBJ.includes(k)?'tp-'+k:''}" onclick="location.replace('#/notes/${k}')">${SUBJ.includes(k)?'<span class="dot"></span>':''}${label}<span class="c">${c}</span></button>`;
   const chips = chip('all', '전체', total) + (starred ? chip('saved', '저장', starred) : '') + TORDER.filter(cnt).map(t => chip(t, TN[t], rcnt(t) + '/' + cnt(t))).join('');
   const ln = last && noteBy(last);
-  paint(`<header class="phead"><h1>요약 노트</h1><p>3과목 ${total}개 장을 개념 설명 위주로 정리. 지금까지 ${done}개 읽음.</p></header>
+  paint(`<header class="phead"><h1>요약 노트</h1><p>3과목 ${total}개 장 · 원본 노트 ${done}개 읽음</p></header>
   <div class="wrap" style="padding-top:0">
     <div class="search"><label class="sbox">${I.search}<input id="nq" type="text" placeholder="용어, 공식, 개념 검색" value="${esc(NQ)}" autocomplete="off" enterkeyhint="search"><button class="x" id="nqx" aria-label="지우기" style="${NQ?'':'display:none'}">✕</button></label>
     <div class="chips" id="chips">${chips}</div></div>
     ${ln && f === 'all' ? `<a id="cont" class="card cont tp-${ln.tp}" href="#/note/${ln.r}" style="margin-top:10px"><span class="sp" style="min-width:0"><span class="s">이어 읽기, ${TN[ln.tp]} ${chap(ln.r)}</span><br><span class="k">${esc(ln.t)}</span></span>${I.chev}</a>` : ''}
-    <div id="nl"></div></div>${tabbar('notes')}`, true);
+    <div id="quest-desk">${questDesk(f)}</div><div id="nl"></div></div>${tabbar('notes')}`, true);
   const inp = $('#nq'), x = $('#nqx');
   let tmr; inp.oninput = () => { clearTimeout(tmr); tmr = setTimeout(() => { NQ = inp.value; x.style.display = NQ ? '' : 'none'; drawList(f); }, 120); };
   x.onclick = e => { e.preventDefault(); NQ = ''; inp.value = ''; x.style.display = 'none'; drawList(f); inp.focus(); };
@@ -926,10 +930,10 @@ function notesList(f){
   drawList(f);
 }
 function drawList(f){
-  const rd = readMap(), sv = starMap(), q = NQ.trim().toLowerCase();
+  const rd = readMap(), sv = starMap(), results = questMap(), q = NQ.trim().toLowerCase();
   let items = N.filter(n => f === 'all' || (f === 'saved' ? sv[n.r] : n.tp === f));
   if (q) items = items.filter(n => n.ix.includes(q));
-  const row = n => `<a class="item tp-${n.tp}" href="#/note/${n.r}"><span class="rno">${n.r % 100}</span><span class="tx"><div class="k">${hl(n.t, q)}</div><div class="e">${hl(n.k || '', q)}</div>${q ? `<div class="snip">${hl(snippet(n, q), q)}</div>` : ''}</span><span class="st">${sv[n.r] ? `<span class="sv">${I.starOn}</span>` : ''}${rd[n.r] ? `<span class="rd" aria-label="읽음">${I.check}</span>` : ''}</span></a>`;
+  const row = n => `<a class="item tp-${n.tp}" href="#/note/${n.r}"><span class="rno">${n.r % 100}</span><span class="tx"><div class="k">${hl(n.t, q)}</div><div class="e">${hl(n.k || '', q)}</div>${q ? `<div class="snip">${hl(snippet(n, q), q)}</div>` : ''}${questBadge(n, results)}</span><span class="st">${sv[n.r] ? `<span class="sv">${I.starOn}</span>` : ''}${rd[n.r] ? `<span class="rd" aria-label="읽음">${I.check}</span>` : ''}</span></a>`;
   let html = '';
   if (!items.length) html = `<div class="empty"><b>${q ? '‘' + esc(NQ) + '’ 결과 없음' : '저장한 노트 없음'}</b>${q ? '다른 표현으로 검색.' : '노트 오른쪽 위 별을 누르면 여기 모임.'}</div>`;
   else if (q || f === 'saved') html = `<div class="ghead"><span class="n">${q ? '검색 결과' : '저장한 노트'}</span><span class="c" style="margin-left:auto">${items.length}개</span></div><div class="glist">${items.map(row).join('')}</div>`;
@@ -939,6 +943,7 @@ function drawList(f){
   }
   $('#nl').innerHTML = html;
   const c = $('#cont'); if (c) c.style.display = q ? 'none' : '';
+  $('#quest-desk').hidden = Boolean(q);
 }
 
 /* ---------- note reader ---------- */
@@ -971,6 +976,7 @@ function noteView(r, losCode){
   const i = N.indexOf(n), pv = N[i-1], nx = N[i+1], sv = starMap()[n.r], rd = readMap()[n.r];
   const fs = load('fs', 17); document.documentElement.style.setProperty('--nfs', fs + 'px');
   const secs = [], dq = relQ(n.r).length, cq = STUDY[n.r]?.length || 0;
+  const cases = questCases(n);
   const studyCase = n.study?.case ? `<article class="art">${lessonBlocks(n.study)}</article>` : '';
   const toc = (n.sec||[]).map((s, j) => `<a href="#" data-a="${j}"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('');
   const losList = (n.los||[]).length ? `<details class="los"><summary>이 장의 학습목표 ${n.los.length}개</summary><ul>${n.los.map(l => { const m = String(l).match(/^(\d+\.[a-z])\s*[:.)]?\s*(.*)$/i); return `<li>${m ? `<b>${m[1]}</b><span>${inl(m[2])}</span>` : `<span>${inl(l)}</span>`}</li>`; }).join('')}</ul></details>` : '';
@@ -980,7 +986,7 @@ function noteView(r, losCode){
   if ((n.terms||[]).length) secs.push(['terms', '용어', n.terms.length, `<div class="terms">${n.terms.map(t => `<div class="term"><span class="en">${inl((t||[])[0])}</span><span class="ko">${inl((t||[])[1]||'')}</span></div>`).join('')}</div>`]);
   if (cq) secs.push(['quiz', '개념 확인', cq, `<div class="art"><p>보기를 고르면 정답과 네 보기의 해설을 바로 확인할 수 있어요. 틀린 문제는 오답 복습함에 들어가요.</p><a class="lesson-action" href="#/check/${n.r}">4지선다 ${cq}문제 풀기</a></div>`]);
   if ((n.chk||[]).length) secs.push(['chk', '자가 점검', n.chk.length, n.chk.map((c, j) => `<details class="qa"><summary><span class="q">Q${j+1}</span><span>${inl(c.q)}</span><span class="hint">답 보기</span></summary><div class="a">${inl(c.a)}</div></details>`).join('')]);
-  const side = `<div class="sh">목차</div><a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
+  const side = `<div class="sh">목차</div>${cases.length ? '<a href="#" data-go="note-quest" class="sg">실무 스토리</a>' : ''}<a href="#" data-go="s-core" class="sg">개념 설명<small>${(n.sec||[]).length}</small></a>`
     + (n.sec||[]).map((s, j) => `<a href="#" data-go="a-${j}" class="si"><span>${(s.los||[])[0] ? esc(s.los[0]) : j+1}</span>${inl(s.h)}</a>`).join('')
     + secs.slice(1).map(s => `<a href="#" data-go="s-${s[0]}" class="sg">${s[1]}<small>${s[2]}</small></a>`).join('');
   const lab = x => `${TN[x.tp]} ${chap(x.r)}`;
@@ -991,9 +997,11 @@ function noteView(r, losCode){
     <button class="btn icon ghost" id="stb" onclick="toggleStar(${n.r})" aria-label="저장" style="color:${sv?'var(--warn)':'inherit'}">${sv?I.starOn:I.star}</button>
   </div></div>
   <div class="nlay tp-${n.tp}"><nav class="side" id="side" aria-label="목차">${side}</nav><div class="wrap">
-    <div class="nhero rise"><div class="sub"><span class="dot"></span>${lab(n)}</div><h1>${esc(n.t)}</h1>${n.k ? `<div class="en">${esc(n.k)}</div>` : ''}${n.tp === 'TX' ? `<div class="taxnote" style="margin:12px 0 0">${TAXNOTE}</div>` : ''}${n.one ? `<p class="one">${inl(n.one)}</p>` : ''}
+    <div class="nhero rise"><div class="sub"><span class="dot"></span>${lab(n)}</div><h1>${esc(n.t)}</h1>${n.k ? `<div class="en">${esc(n.k)}</div>` : ''}${n.tp === 'TX' ? `<div class="taxnote" style="margin:12px 0 0">${TAXNOTE}</div>` : ''}
+    ${cases.length ? questPanel(n, cases) : ''}
+    <div id="note-intro">${n.one ? `<p class="one">${inl(n.one)}</p>` : ''}
     ${cq ? `<a class="drill lesson-quick" href="#/check/${n.r}">개념 확인 문제 풀기<span>${cq}문제</span></a>` : ''}
-    ${dq ? `<a class="drill" href="#/drill/${n.r}">이 장 문제 모아 풀기<span>모의고사 ${dq}문제</span></a>` : ''}</div>
+    ${dq ? `<a class="drill" href="#/drill/${n.r}">이 장 문제 모아 풀기<span>모의고사 ${dq}문제</span></a>` : ''}</div></div>
     <nav class="jump" id="jump"><button class="jtoc" onclick="tocSheet()">${I.menu}목차</button>${secs.map(s => `<a href="#" data-to="${s[0]}">${s[1]} ${s[2]}</a>`).join('')}</nav>
     ${secs.map(s => `<section class="nsec" id="s-${s[0]}"><h2>${s[1]}<small>${s[2]}</small></h2>${s[3]}</section>`).join('')}
     ${n.study?.sources?.length ? `<details class="lesson-sources"><summary>학습 기준과 출처</summary><div class="lesson-links">${n.study.sources.map(([label, url]) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`).join('')}</div></details>` : ''}
@@ -1001,6 +1009,7 @@ function noteView(r, losCode){
     <div class="pn">${pv ? `<a href="#/note/${pv.r}" onclick="location.replace(this.href);return false"><div class="d">‹ 이전 ${lab(pv)}</div><div class="k">${esc(pv.t)}</div></a>` : '<span></span>'}${nx ? `<a class="nx" href="#/note/${nx.r}" onclick="location.replace(this.href);return false"><div class="d">다음 ${lab(nx)} ›</div><div class="k">${esc(nx.t)}</div></a>` : ''}</div>
   </div></div>`);
   const smooth = matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth';
+  if (cases.length) questBind(n, cases, smooth);
   const jump = $('#jump');
   jump.onclick = e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); $('#s-' + a.dataset.to).scrollIntoView({behavior: smooth}); };
   document.querySelector('.toc').onclick = e => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); $('#a-' + a.dataset.a).scrollIntoView({behavior: smooth}); };
@@ -1020,12 +1029,12 @@ function noteView(r, losCode){
         if (a && (a.offsetTop < sd.scrollTop + 40 || a.offsetTop > sd.scrollTop + sd.clientHeight - 60)) sd.scrollTop = a.offsetTop - sd.clientHeight / 3;
       });
     }, {rootMargin: '-130px 0px -60% 0px'});
-    document.querySelectorAll('.nsec, .art').forEach(s => spy.observe(s));
+    document.querySelectorAll('#note-quest, .nsec, .art').forEach(s => spy.observe(s));
   }
   const rp = $('#rp');
   onscroll = () => { if (!rp.isConnected){ onscroll = null; return; } const h = document.documentElement.scrollHeight - innerHeight; rp.style.width = (h > 0 ? scrollY / h * 100 : 0) + '%'; };
   if (losCode){
-    const t = [...document.querySelectorAll('.art')].find(a => a.dataset.los.split(' ').includes(losCode));
+    const t = [...document.querySelectorAll('.art')].find(a => (a.dataset.los || '').split(' ').includes(losCode));
     const go = t || $('#s-core');
     setTimeout(() => { go.scrollIntoView(); if (t){ t.classList.add('hit'); setTimeout(() => t.classList.remove('hit'), 2400); } }, 60);
   }
@@ -1084,3 +1093,4 @@ boot().catch(() => {}).then(route);
 <script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}</script>
 </body>
 </html>
+
