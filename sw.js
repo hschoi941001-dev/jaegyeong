@@ -1,5 +1,5 @@
 // Offline cache. Bump VERSION when files change.
-const VERSION = 'jg-v15';
+const VERSION = 'jg-v16';
 const ASSETS = ['./', 'index.html', 'quest.css', 'quest.js', 'easy-notes.js', 'lab-data.js', 'lab.js', 'lab.css', 'walkthrough-data.js', 'walkthrough.js?v=12', 'walkthrough.css?v=10', 'topic-visuals.js?v=12', 'topic-visuals.css?v=12', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-512-maskable.png', 'apple-touch-icon.png'];
 const DATA = [
   'data/notes-FA.json', 'data/notes-TX.json', 'data/notes-CM.json',
@@ -27,13 +27,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
-  // Web font: cache first (files are versioned and never change).
-  if (url.host === FONT_HOST){
-    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      const copy = res.clone(); caches.open(VERSION).then(c => c.put(e.request, copy)); return res;
-    })));
-    return;
-  }
+  // Other hosts (web font CDN): let the browser fetch directly so a stuck CDN never blocks the page.
+  if (url.origin !== location.origin) return;
   // App files: network first (so updates arrive), cache fallback when offline.
   e.respondWith(
     fetch(e.request)
